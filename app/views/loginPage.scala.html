@@ -1,0 +1,15 @@
+@(form: Form[MemberAuthenticationToken])
+
+@import com.github.amertum.springframework.security.play2.SpringSecurityAction.routeWithRequestContinueUrl
+
+@main("Login") {
+
+    @formErrors(form)
+
+    <form method="POST" action="@routeWithRequestContinueUrl(routes.Auth.login(), request())">
+        <input type="text" name="pseudo" value="@form.field("username").value">
+        <input type="password" name="secretKey">
+
+        <input type="submit" value="Login">
+    </form>
+}

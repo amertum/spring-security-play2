@@ -1,0 +1,8 @@
+@(content: Html)
+@import com.github.amertum.springframework.security.play2.context.HttpSessionSecurityContextRepository
+@import com.github.amertum.springframework.security.play2.context.HttpSessionSecurityContextRepository
+
+
+@if(HttpSessionSecurityContextRepository.isAuthenticationFailure){
+    @content
+}

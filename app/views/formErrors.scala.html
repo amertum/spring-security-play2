@@ -1,0 +1,40 @@
+@(form: Form[_], prefix: String = "", pageUrl: String = "")
+
+@import models.ConstraintsMessageCodes.ERROR_FORM
+@import models.ConstraintsMessageCodes.ERROR_VERSION
+
+@_prefix = @{ if(prefix.isEmpty){ "" }else{ prefix.stripSuffix(".") + "."} }
+@showDetails = @{ !_prefix.isEmpty }
+
+@if(form != null && form.hasErrors){
+    @if(form.hasGlobalErrors && form.globalError().message == ERROR_VERSION){
+        <div class="alert alert-error">@Html(Messages(form.globalError().message, pageUrl))</div>
+    }else{
+        <div class="alert alert-error">
+            @Messages(ERROR_FORM)
+
+            @if(form.hasGlobalErrors || showDetails){
+                <ul>
+                    @for((key, errors) <- form.errors()) {
+                        @if(key.isEmpty){
+                            @for(error <- errors){
+                                <li>@Messages(error.message)</li>
+                            }
+                        }else{
+                            @if(showDetails){
+                                <li>
+                                    @Messages(_prefix + key)
+                                    <ul>
+                                        @for(error <- errors){
+                                            <li>@Messages(error.message, error.arguments():_*)</li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                        }
+                    }
+                </ul>
+            }
+        </div>
+    }
+}

@@ -1,0 +1,7 @@
+@(content: (Option[org.springframework.security.core.Authentication]) => Html)
+
+@import org.springframework.security.core.context.SecurityContextHolder
+
+@authentication = @{SecurityContextHolder.getContext.getAuthentication}
+
+@content(Option(authentication))

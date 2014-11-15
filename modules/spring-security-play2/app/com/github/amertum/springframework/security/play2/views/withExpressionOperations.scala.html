@@ -1,0 +1,9 @@
+@(content: (Option[org.springframework.security.access.expression.SecurityExpressionOperations]) => Html)
+
+@import com.github.amertum.springframework.security.play2.context.HttpSessionSecurityContextRepository
+@import play.mvc.Http.Context.Implicit.ctx
+@import HttpSessionSecurityContextRepository.getSecurityExpressionOperations
+
+@securityExpressionOperationsOption = @{Option(getSecurityExpressionOperations(ctx()))}
+
+@content(securityExpressionOperationsOption)

@@ -1,0 +1,62 @@
+@(title: String)(content: Html)
+
+@import com.github.amertum.springframework.security.play2.views.html._
+@import org.springframework.security.core.Authentication
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+    </head>
+    <body>
+        @content
+
+        @sessionTimeout{
+            <p>Session timeout</p>
+        }
+        @authenticationFailure{
+            <p>Authentication failure</p>
+        }
+
+        <p>
+            <a href="@routes.Auth.login()">Login</a>
+            <a href="@routes.Auth.logout()">Logout</a>
+        </p>
+
+        <ul>
+            <li>user : userp</li>
+            <li>admin : adminp</li>
+        </ul>
+
+        <p>
+            <a href="@routes.NotSecured.unsecuredPage()">Unsecured</a>
+            <a href="@routes.Main.publicPage()">Public</a>
+            <a href="@routes.Main.anonymousPage()">Anonymous</a>
+            <a href="@routes.Main.securedUserPage()">Secured User</a>
+            <a href="@routes.Main.securedAdminPage()">Secured Admin</a>
+        </p>
+
+        <p>
+            <strong>authentication</strong> : @withAuthentication{ (authenticationOption: Option[Authentication]) =>
+                @if(authenticationOption.isDefined){
+                    @authenticationOption.get.getName (authenticated: @authenticationOption.get.isAuthenticated) with roles @authenticationOption.get.getAuthorities
+                }
+            }
+        </p>
+        <p>
+            @withRoles("ROLE_USER"){ () =>
+                <div>with role user</div>
+            }
+            @withoutRoles("ROLE_USER"){ () =>
+                <div>NOT with role user</div>
+            }
+            @withRoles("ROLE_ADMIN"){ () =>
+                <div>with role admin</div>
+            }
+            @withoutRoles("ROLE_ADMIN"){ () =>
+                <div>NOT with role admin</div>
+            }
+        </p>
+    </body>
+</html>

@@ -1,0 +1,10 @@
+@(roles: String*)(content: () => Html)
+
+@import com.github.amertum.springframework.security.play2.views.html.withExpressionOperations
+@import org.springframework.security.access.expression.SecurityExpressionOperations
+
+@withExpressionOperations{ (expressionOperationsOption: Option[SecurityExpressionOperations]) =>
+    @if(expressionOperationsOption.exists(_.hasAnyRole(roles:_*))){
+        @content()
+    }
+}

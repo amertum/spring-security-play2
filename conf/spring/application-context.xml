@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <bean id="clock" class="java.time.Clock" factory-method="systemUTC" />
+
+    <security:global-method-security
+            secured-annotations="enabled"
+            pre-post-annotations="enabled"
+            proxy-target-class="true">
+        <security:expression-handler ref="methodSecurityExpressionHandler" />
+    </security:global-method-security>
+
+    <bean id="methodSecurityExpressionHandler" class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler">
+        <property name="roleHierarchy" ref="roleHierarchy" />
+    </bean>
+
+    <security:authentication-manager alias="authenticationManager" erase-credentials="true">
+        <security:authentication-provider user-service-ref="userService">
+            <security:password-encoder ref="bCryptPasswordEncoder" />
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <!--
+    <bean id="authenticationManager" class="org.springframework.security.authentication.ProviderManager">
+        <constructor-arg>
+            <list>
+                <bean class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+                    <property name="userDetailsService" ref="userService" />
+                    <property name="passwordEncoder" ref="bCryptPasswordEncoder" />
+                </bean>
+                <bean class="org.springframework.security.authentication.AnonymousAuthenticationProvider">
+                    <constructor-arg>
+                        <util:constant static-field="com.github.amertum.springframework.security.play2.context.HttpSessionSecurityContextRepository.SECURITY_ANONYMOUS_KEY" />
+                    </constructor-arg>
+                </bean>
+            </list>
+        </constructor-arg>
+        <property name="eraseCredentialsAfterAuthentication" value="true" />
+    </bean>
+    -->
+
+    <security:user-service id="userService">
+        <security:user name="ANONYMOUS" password="anonymousp" authorities="ROLE_ANONYMOUS" />
+        <security:user name="user" password="$2a$12$OwVTFwMUQSzMh8dOHh1vCeH07u.zod6h6JV1MaskSOGWtLlqpfvf." authorities="ROLE_USER" /> <!-- userp -->
+        <security:user name="admin" password="$2a$12$X9oOxnQNoRUtimsQEnU0Vu1Z2hb2jmzB1gW9c61cTNQQO/jB3qA3O" authorities="ROLE_ADMIN" /> <!-- adminp -->
+    </security:user-service>
+
+    <!--
+    <bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+        <constructor-arg>
+            <util:list>
+                <bean id="roleVoter" class="org.springframework.security.access.vote.RoleHierarchyVoter">
+                    <constructor-arg ref="roleHierarchy" />
+                </bean>
+                <bean class="org.springframework.security.access.vote.AuthenticatedVoter" />
+                <bean class="org.springframework.security.access.prepost.PreInvocationAuthorizationAdviceVoter">
+                    <constructor-arg>
+                        <bean class="org.springframework.security.access.expression.method.ExpressionBasedPreInvocationAdvice">
+                            <property name="expressionHandler" ref="methodSecurityExpressionHandler" />
+                        </bean>
+                    </constructor-arg>
+                </bean>
+            </util:list>
+        </constructor-arg>
+    </bean>
+    -->
+
+    <bean id="roleHierarchy" class="org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl">
+        <property name="hierarchy">
+            <value>
+                ROLE_ADMIN > ROLE_USER
+                ROLE_USER > ROLE_ANONYMOUS
+            </value>
+        </property>
+    </bean>
+
+    <bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+        <constructor-arg value="12" />
+        <constructor-arg>
+            <bean class="java.security.SecureRandom" />
+        </constructor-arg>
+    </bean>
+
+    <bean id="httpSessionSecurityContextRepository"  class="com.github.amertum.springframework.security.play2.context.HttpSessionSecurityContextRepository">
+        <constructor-arg ref="userService" />
+        <constructor-arg ref="securityExpressionOperationsSupplier" />
+    </bean>
+
+    <bean id="sessionTimeoutAction"  class="com.github.amertum.springframework.security.play2.SessionTimeoutAction">
+        <constructor-arg ref="clock" />
+        <constructor-arg value="15" />
+        <constructor-arg value="#{T(controllers.routes).Main.publicPage()}" />
+    </bean>
+
+    <bean class="com.github.amertum.springframework.security.play2.SpringSecurityAction">
+        <constructor-arg ref="httpSessionSecurityContextRepository" />
+        <constructor-arg value="#{T(controllers.routes).Auth.showLogin()}" />
+    </bean>
+
+    <bean id="securityExpressionOperationsSupplier" class="com.github.amertum.springframework.security.play2.context.SecurityExpressionOperationsSupplier">
+        <property name="roleHierarchy" ref="roleHierarchy" />
+    </bean>
+
+    <bean class="controllers.Auth">
+        <constructor-arg ref="authenticationManager" />
+    </bean>
+    <bean class="controllers.Main" />
+    <bean class="controllers.NotSecured" />
+
+</beans>
